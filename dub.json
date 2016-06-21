@@ -1,0 +1,9 @@
+{
+	"name": "jsonparser",
+	"authors": [
+		"alphaKAI"
+	],
+	"description": "Yet Another JSON Parser",
+	"copyright": "Copyright (C) 2016, alphaKAI",
+	"license": "MIT"
+}
