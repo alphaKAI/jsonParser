@@ -5,9 +5,9 @@ import jsonParser.jsonStructure;
 
 private {
   long   at;
-  string ch;
-  string[string] escapee;
-  string text;
+  char ch;
+  char[char] escapee;
+  char[] text;
 }
 
 private void error(string errStr) {
@@ -25,29 +25,29 @@ private void initJSONParser() {
   ch = ch.init;
   text = text.init;
   escapee = [
-    "\"":  "\"",
-    "\\": "\\",
-    "/":  "/",
-    "b":  "b",
-    "f":  "\f",
-    "n":  "\n",
-    "r":  "\r",
-    "t":  "\t"
+    '\"': '\"',
+    '\\': '\\',
+    '/':  '/',
+    'b':  'b',
+    'f':  '\f',
+    'n':  '\n',
+    'r':  '\r',
+    't':  '\t'
   ];
 }
 
-private string next() {
+private char next() {
   if (at < text.length) {
-    ch = text[at].to!string;
+    ch = text[at];
     at += 1;
     return ch;
   } else {
-    ch = null;
-    return null;
+    ch = ' ';
+    return ' ';
   }
 }
 
-private string next(string c) {
+private char next(char c) {
   if (c && c != ch) {
     error("Expected '" ~ c ~ "' instade of '" ~ ch ~ "'");
   }
@@ -57,36 +57,36 @@ private string next(string c) {
 
 private JSONNodeValue numberProc() {
   float _number;
-  string str;
+  char[] str;
 
-  if (ch == "-") {
-    str = "-";
-    next("-");
+  if (ch == '-') {
+    str = ['-'];
+    next('-');
   }
 
-  while ("0" <= ch && ch <= "9") {
+  while ('0' <= ch && ch <= '9') {
     str ~= ch;
     next;
   }
 
-  if (ch == ".") {
-    str ~= ".";
+  if (ch == '.') {
+    str ~= '.';
 
-    while (next && "0" <= ch && ch <= "9") {
+    while (next && '0' <= ch && ch <= '9') {
       str ~= ch;
     }
   }
 
-  if (ch == "e" || ch == "E") {
+  if (ch == 'e' || ch == 'E') {
     str ~= ch;
     next;
 
-    if (ch == "-" || ch == "+") {
+    if (ch == '-' || ch == '+') {
       str ~= ch;
       next;
     }
 
-    while ("0" <= ch && ch <= "9") {
+    while ('0' <= ch && ch <= '9') {
       str ~= ch;
       next;
     }
@@ -108,18 +108,18 @@ private JSONNodeValue stringProc() {
   float hex,
        i,
        uffff;
-  string str = "";
+  char[] str;
 
-  if (ch == "\"") {
+  if (ch == '"') {
     while (next()) {
-      if (ch == "\"") {
+      if (ch == '"') {
         next;
         JSONNodeValue jsonNodeValue = new JSONNodeValue(JSONNodeValueType.String);
-        jsonNodeValue.setValue(str);
+        jsonNodeValue.setValue(str.to!string);
         return jsonNodeValue;
-      } else if (ch == "\\") {
+      } else if (ch == '\\') {
         next;
-        if (ch == "u") {
+        if (ch == 'u') {
           uffff = 0;
           for (i = 0; i < 4; i++) {
             hex = next().to!float;
@@ -145,7 +145,7 @@ private JSONNodeValue stringProc() {
 }
 
 private void white() {
-  while (ch && ch <= " ") {
+  while (ch && ch <= ' ') {
     next;
   }
 }
@@ -153,28 +153,28 @@ private void white() {
 private JSONNodeValue wordProc() {
   JSONNodeValue jsonNodeValue;
   switch(ch) {
-    case "t":
-      next("t");
-      next("r");
-      next("u");
-      next("e");
+    case 't':
+      next('t');
+      next('r');
+      next('u');
+      next('e');
       jsonNodeValue = new JSONNodeValue(JSONNodeValueType.Boolean);
       jsonNodeValue.setValue(true);
       return jsonNodeValue;
-    case "f":
-      next("f");
-      next("a");
-      next("l");
-      next("s");
-      next("e");
+    case 'f':
+      next('f');
+      next('a');
+      next('l');
+      next('s');
+      next('e');
       jsonNodeValue = new JSONNodeValue(JSONNodeValueType.Boolean);
       jsonNodeValue.setValue(false);
       return jsonNodeValue;
-    case "n":
-      next("n");
-      next("u");
-      next("l");
-      next("l");
+    case 'n':
+      next('n');
+      next('u');
+      next('l');
+      next('l');
       jsonNodeValue = new JSONNodeValue(JSONNodeValueType.Boolean);
       jsonNodeValue.setValue(new JSONNULL);
       return jsonNodeValue;
@@ -189,11 +189,11 @@ private JSONNodeValue arrayProc() {
   JSONArray array = new JSONArray([]);
   JSONNodeValue jsonNodeValue = new JSONNodeValue(JSONNodeValueType.Array);
 
-  if (ch == "[") {
-    next("[");
+  if (ch == '[') {
+    next('[');
     white();
-    if (ch == "]") {
-      next("]");
+    if (ch == ']') {
+      next(']');
       jsonNodeValue.setValue(array);
       return jsonNodeValue;
     }
@@ -201,12 +201,12 @@ private JSONNodeValue arrayProc() {
     while (ch) {
       array.addValue(valueProc());
       white();
-      if (ch == "]") {
-        next("]");
+      if (ch == ']') {
+        next(']');
         jsonNodeValue.setValue(array);
         return jsonNodeValue;
       }
-      next(",");
+      next(',');
       white;
     }
   }
@@ -219,11 +219,11 @@ private JSONNodeValue objectProc() {
   JSONNodeValue jsonNodeValue = new JSONNodeValue(JSONNodeValueType.JSONObject);
   JSONObject object = new JSONObject;
 
-  if (ch == "{") {
-    next("{");
+  if (ch == '{') {
+    next('{');
     white;
-    if (ch == "}") {
-      next("}");
+    if (ch == '}') {
+      next('}');
       jsonNodeValue.setValue(object);
       return jsonNodeValue;
     }
@@ -231,17 +231,17 @@ private JSONNodeValue objectProc() {
     while (ch) {
       key = stringProc().getValue!(JSONNodeValueType.String);
       white;
-      next(":");
+      next(':');
       object.addNode(new JSONNode(key, valueProc()));
 
       white;
-      if (ch == "}") {
-        next("}");
+      if (ch == '}') {
+        next('}');
         jsonNodeValue.setValue(object);
         return jsonNodeValue;
       }
 
-      next(",");
+      next(',');
       white();
     }
   }
@@ -253,26 +253,26 @@ private JSONNodeValue valueProc() {
   white;
 
   switch (ch) {
-    case "{":
+    case '{':
       return objectProc;
-    case "[":
+    case '[':
       return arrayProc;
-    case "\"":
+    case '"':
       return stringProc;
-    case "-":
+    case '-':
       return numberProc;
     default:
-      return ("0" <= ch && ch <= "9") ? numberProc : wordProc;
+      return ('0' <= ch && ch <= '9') ? numberProc : wordProc;
   }
 }
 
 JSONObject parseJSON(string _text) {
   initJSONParser;
-  text = _text;
-  ch = " ";
+  text = _text.to!(char[]);
+  ch = ' ';
   JSONNodeValue result = valueProc;
 
-  if (ch) {
+  if (ch != ' ') {
     throw new Error("SyntaxError");
   }
 
