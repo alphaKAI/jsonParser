@@ -1,4 +1,5 @@
 module jsonParser.jsonParser;
+
 import std.conv,
        std.math;
 import jsonParser.jsonStructure;
@@ -298,3 +299,4 @@ unittest {
 
   dumpJSONString(json);
 }
+
